@@ -213,7 +213,7 @@ void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
     char time_string[80];
     if (basket->size_basket == 0)
     {
-        printf("user's basket is empty.\n");
+        printf("User's basket is empty.\n");
     }
     else
     {
@@ -266,85 +266,74 @@ int main()
     int size_search_result = 0;
     int product_choice = 0;
     int product_amount = 0;
-    bool is_return_mm;
+    bool is_return_mm = false;
     struct Basket baskets[100];
     int basket_sub_menu_choice = 0;
     int temp_bsm_choice = 0; // temp basket sub menu choice
-    bool is_return_bsm;
+    bool is_return_bsm = false;
+    bool is_return_lp = false; // is return login page
 
     createInitialUsers(users);
     createProducts(products);
     createInitialBaskets(baskets);
 
-    printf("****Welcome to Medipol Online Market****\n");
-    printf("Please log in by providing your user credentials:\n");
     do
     {
-        printf("User Name:");
-        scanf("%s", user_name);
-        printf("Password:");
-        scanf("%s", password);
-        login_id = login(user_name, password, users, number_of_users);
-
-    } while (login_id == -1);
-
-    printf("Welcome, %s! Please choose one of the following options by entering the corresponding menu number.\n", user_name);
-
-    if (login_id == 100)
-    {
-    }
-    else
-    {
+        is_return_lp = false;
+        printf("****Welcome to Medipol Online Market****\n");
+        printf("Please log in by providing your user credentials:\n");
         do
         {
-            printf("Please choose one of the following services:\n");
-            printf("1. Search for a product\n");
-            printf("2. See Basket\n");
-            printf("3. Check Out\n");
-            printf("4. Logout\n");
-            printf("5. Exit\n");
+            printf("User Name : ");
+            scanf("%s", user_name);
+            printf("Password : ");
+            scanf("%s", password);
+            login_id = login(user_name, password, users, number_of_users);
 
+        } while (login_id == -1);
+
+        printf("Welcome, %s! Please choose one of the following options by entering the corresponding menu number.\n", user_name);
+
+        if (login_id == 100)
+        {
+        }
+        else
+        {
             do
             {
-                printf("Your choice (1-5) : ");
-                scanf("%d", &main_menu_choice);
-            } while (!(main_menu_choice >= 1 && main_menu_choice <= 5));
-
-            if (main_menu_choice == 1)
-            {
                 is_return_mm = false;
-                printf("What are you searching for? ");
-                scanf("%s", search);
-                searchForAProduct(search, products, search_result, &size_search_result);
+                printf("Please choose one of the following services:\n");
+                printf("1. Search for a product\n");
+                printf("2. See Basket\n");
+                printf("3. Check Out\n");
+                printf("4. Logout\n");
+                printf("5. Exit\n");
 
-                if (size_search_result == 0)
+                do
                 {
-                    do
+                    printf("Your selection (1-5) : ");
+                    scanf("%d", &main_menu_choice);
+                } while (!(main_menu_choice >= 1 && main_menu_choice <= 5)); // main_menu_choice validasyonu
+
+                if (main_menu_choice == 1)
+                {
+                    printf("What are you searching for ? ");
+                    scanf("%s", search);
+                    searchForAProduct(search, products, search_result, &size_search_result);
+
+                    if (size_search_result == 0)
                     {
-                        printf("Your search did not match any items. Please try something else (Enter 0 for main menu): ");
-                        scanf("%s", search);
-                        is_return_mm = !strcmp(search, "0") ? true : false;
-                        if (!is_return_mm)
+                        do
                         {
-                            searchForAProduct(search, products, search_result, &size_search_result);
-                        }
-                    } while (!is_return_mm && size_search_result == 0);
-                }
-
-                if (is_return_mm)
-                {
-                    printf("Going back to main menu...\n");
-                }
-                else
-                {
-                    printf("found %d similar items:\n", size_search_result);
-                    for (int i = 0; i < size_search_result; i++)
-                    {
-                        printf("%d.%s %d$\n", i + 1, search_result[i].name, search_result[i].price);
+                            printf("Your search did not match any items. Please try something else (Enter 0 for main menu) : ");
+                            scanf("%s", search);
+                            is_return_mm = !strcmp(search, "0") ? true : false;
+                            if (!is_return_mm)
+                            {
+                                searchForAProduct(search, products, search_result, &size_search_result);
+                            }
+                        } while (!is_return_mm && size_search_result == 0);
                     }
-                    printf("Please select which item you want to add to your basket (Enter 0 for main menu): ");
-                    scanf("%d", &product_choice);
-                    is_return_mm = product_choice == 0 ? true : false;
 
                     if (is_return_mm)
                     {
@@ -352,18 +341,18 @@ int main()
                     }
                     else
                     {
-                        printf("Adding %s. Enter Amount: ", search_result[product_choice - 1].name);
-                        scanf("%d", &product_amount);
-                        if (product_amount > search_result[product_choice - 1].stock_amount)
+                        printf("found %d similar items:\n", size_search_result);
+                        for (int i = 0; i < size_search_result; i++)
                         {
-                            do
-                            {
-                                printf("Sorry! The amount exceeds the limit, Please try again with smaller amount\n");
-                                printf("Amount (Enter 0 for main menu): ");
-                                scanf("%d", &product_amount);
-                                is_return_mm = product_amount == 0 ? true : false;
-                            } while (!is_return_mm && product_amount > search_result[product_choice - 1].stock_amount);
+                            printf("%d.%s %d$\n", i + 1, search_result[i].name, search_result[i].price);
                         }
+
+                        do
+                        {
+                            printf("Please select which item you want to add to your basket (1-%d / Enter 0 for main menu) : ", size_search_result);
+                            scanf("%d", &product_choice);
+                        } while (!(product_choice >= 0 && product_choice <= size_search_result)); // product_choice validasyonu
+                        is_return_mm = product_choice == 0 ? true : false;
 
                         if (is_return_mm)
                         {
@@ -371,95 +360,147 @@ int main()
                         }
                         else
                         {
-                            baskets[login_id].products[baskets[login_id].size_basket] = search_result[product_choice - 1];
-                            baskets[login_id].product_amount[baskets[login_id].size_basket] = product_amount;
-                            baskets[login_id].size_basket++;
+                            do
+                            {
+                                printf("Adding %s. Enter Amount (Entered amount must be greater than zero) : ", search_result[product_choice - 1].name);
+                                scanf("%d", &product_amount);
+                            } while (!(product_amount > 0));
 
-                            printf("Added %s into your Basket.\n", search_result[product_choice - 1].name);
-                            is_return_mm = true;
-                            printf("Going back to main menu...\n");
+                            if (product_amount > search_result[product_choice - 1].stock_amount)
+                            {
+                                do
+                                {
+                                    printf("Sorry! The amount exceeds the limit, Please try again with smaller amount\n");
+                                    do
+                                    {
+                                        printf("Amount (Entered amount must be greater than zero / Enter 0 for main menu) : ");
+                                        scanf("%d", &product_amount);
+                                    } while (product_amount < 0);
+
+                                    is_return_mm = product_amount == 0 ? true : false;
+                                } while (!is_return_mm && product_amount > search_result[product_choice - 1].stock_amount);
+                            }
+
+                            if (is_return_mm)
+                            {
+                                printf("Going back to main menu...\n");
+                            }
+                            else
+                            {
+                                baskets[login_id].products[baskets[login_id].size_basket] = search_result[product_choice - 1];
+                                baskets[login_id].product_amount[baskets[login_id].size_basket] = product_amount;
+                                baskets[login_id].size_basket++;
+
+                                printf("Added %s into your Basket.\n", search_result[product_choice - 1].name);
+                                is_return_mm = true;
+                                printf("Going back to main menu...\n");
+                            }
                         }
                     }
                 }
-            }
-            else if (main_menu_choice == 2)
-            {
-                is_return_mm = false;
-                is_return_bsm = false;
-                do
+                else if (main_menu_choice == 2)
                 {
-                    if (baskets[login_id].size_basket == 0)
+                    do
                     {
-                        printf("user's basket is empty.\n");
-                    }
-                    else
-                    {
-                        printf("Your basket contains:\n");
-                        calculateTotalAndShowBasket(&baskets[login_id]);
-                    }
-                    printf("Please choose an option:\n");
-                    printf("1.Update amount\n");
-                    printf("2.Remove an item\n");
-                    printf("3.Check out\n");
-                    printf("4.Go back to main menu\n");
-                    printf("Your selection: ");
-                    scanf("%d", &basket_sub_menu_choice);
-
-                    if (basket_sub_menu_choice == 1)
-                    {
-                        printf("Please select which item to change its amount : ");
-                        scanf("%d", &temp_bsm_choice);
-                        printf("Please type the new amount : ");
-                        scanf("%d", &product_amount);
-
-                        if (product_amount > baskets[login_id].products[temp_bsm_choice - 1].stock_amount)
+                        is_return_bsm = false;
+                        if (baskets[login_id].size_basket == 0)
                         {
-                            do
-                            {
-                                printf("Sorry! The amount exceeds the limit, Please try again with smaller amount\n");
-                                printf("Amount (Enter 0 for main menu): ");
-                                scanf("%d", &product_amount);
-                                is_return_mm = product_amount == 0 ? true : false;
-                            } while (!is_return_mm && product_amount > baskets[login_id].products[temp_bsm_choice - 1].stock_amount);
-                        }
-                        else
-                        {
-                            baskets[login_id].product_amount[temp_bsm_choice - 1] = product_amount;
-                            printf("Your basket now contains:\n");
-                            calculateTotalAndShowBasket(&baskets[login_id]);
-                        }
-
-                        if (is_return_mm)
-                        {
+                            printf("User's basket is empty.\n");
                             printf("Going back to main menu...\n");
+                            is_return_mm = true;
                         }
                         else
-                        {
-                            is_return_bsm = true;
-                        }
-                    }
-                    else if (basket_sub_menu_choice == 2)
-                    {
-                        printf("Please select which item to remove : ");
-                        scanf("%d", &temp_bsm_choice);
-                        removeItemEditBasket(&baskets[login_id], temp_bsm_choice - 1);
-                        if (baskets[login_id].size_basket != 0)
                         {
                             printf("Your basket contains:\n");
                             calculateTotalAndShowBasket(&baskets[login_id]);
+                            printf("Please choose an option:\n");
+                            printf("1.Update amount\n");
+                            printf("2.Remove an item\n");
+                            printf("3.Check out\n");
+                            printf("4.Go back to main menu\n");
+                            do
+                            {
+                                printf("Your selection (1-4) : ");
+                                scanf("%d", &basket_sub_menu_choice);
+                            } while (!(basket_sub_menu_choice >= 1 && basket_sub_menu_choice <= 4));
+
+                            if (basket_sub_menu_choice == 1)
+                            {
+                                do
+                                {
+                                    printf("Please select which item to change its amount (1-%d) : ", baskets[login_id].size_basket);
+                                    scanf("%d", &temp_bsm_choice);
+                                } while (!(temp_bsm_choice >= 1 && temp_bsm_choice <= baskets[login_id].size_basket));
+
+                                do
+                                {
+                                    printf("Please type the new amount (Entered amount must be greater than zero) : ");
+                                    scanf("%d", &product_amount);
+                                } while (!(product_amount > 0));
+
+                                if (product_amount > baskets[login_id].products[temp_bsm_choice - 1].stock_amount)
+                                {
+                                    do
+                                    {
+                                        printf("Sorry! The amount exceeds the limit, Please try again with smaller amount\n");
+                                        do
+                                        {
+                                            printf("Amount (Entered amount must be greater than zero / Enter 0 for main menu) : ");
+                                            scanf("%d", &product_amount);
+                                        } while (product_amount < 0);
+                                        is_return_mm = product_amount == 0 ? true : false;
+                                    } while (!is_return_mm && product_amount > baskets[login_id].products[temp_bsm_choice - 1].stock_amount);
+                                }
+                                else
+                                {
+                                    baskets[login_id].product_amount[temp_bsm_choice - 1] = product_amount;
+                                }
+
+                                if (is_return_mm)
+                                {
+                                    printf("Going back to main menu...\n");
+                                }
+                                else
+                                {
+                                    is_return_bsm = true;
+                                }
+                            }
+                            else if (basket_sub_menu_choice == 2)
+                            {
+                                do
+                                {
+                                    printf("Please select which item to remove (1-%d) : ", baskets[login_id].size_basket);
+                                    scanf("%d", &temp_bsm_choice);
+                                } while (!(temp_bsm_choice >= 1 && temp_bsm_choice <= baskets[login_id].size_basket));
+                                removeItemEditBasket(&baskets[login_id], temp_bsm_choice - 1);
+                                is_return_bsm = true;
+                            }
+                            else if (basket_sub_menu_choice == 3)
+                            {
+                                checkOutAndPrintReceipt(products, &baskets[login_id]);
+                                is_return_mm = true;
+                            }
+                            else if (basket_sub_menu_choice == 4)
+                            {
+                                is_return_mm = true;
+                            }
                         }
 
-                        is_return_bsm = true;
-                    }
-                    else if (basket_sub_menu_choice == 3)
-                    {
-                        checkOutAndPrintReceipt(products, &baskets[login_id]);
-                    }
-
-                } while (is_return_bsm);
-            }
-        } while (is_return_mm);
-    }
+                    } while (is_return_bsm);
+                }
+                else if (main_menu_choice == 3)
+                {
+                    checkOutAndPrintReceipt(products, &baskets[login_id]);
+                    is_return_mm = true;
+                }
+                else if (main_menu_choice == 4)
+                {
+                    is_return_lp = true;
+                }
+                // exit için else{} durumu yazmaya gerek yok. is_return_lp = false -> her döngü başlangıçı
+            } while (is_return_mm);
+        }
+    } while (is_return_lp);
 
     return 0;
 }
