@@ -186,7 +186,7 @@ void calculateTotalAndShowBasket(struct Basket *basket)
         printf("%d.%s price=%d amount=%d total=%d$\n", i + 1, basket->products[i].name, basket->products[i].price, basket->product_amount[i], basket->product_amount[i] * basket->products[i].price);
         basket->total += basket->product_amount[i] * basket->products[i].price;
     }
-    printf("Total %d$\n\n", basket->total);
+    printf("Total %d$\n", basket->total);
 }
 
 void removeItemEditBasket(struct Basket *basket, int remove_item_index)
@@ -211,45 +211,33 @@ void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
     time_t current_time;
     struct tm *time_info;
     char time_string[80];
-    if (basket->size_basket == 0)
+    for (int i = 0; i < basket->size_basket; i++)
     {
-        printf("User's basket is empty.\n");
-    }
-    else
-    {
-        for (int i = 0; i < basket->size_basket; i++)
+        for (int j = 0; j < 13; j++)
         {
-            for (int j = 0; j < 13; j++)
+            if (!strcmp(basket->products[i].name, products[j].name))
             {
-                if (!strcmp(basket->products[i].name, products[j].name))
-                {
-                    products[j].stock_amount -= basket->product_amount[i];
-                }
+                products[j].stock_amount -= basket->product_amount[i];
             }
         }
-
-        printf("Processing your receipt...\n");
-        printf("******* Medipol Online Market ********\n");
-        printf("**************************************\n");
-        printf("444 8 544\n");
-        printf("medipol.edu.tr\n");
-        printf("_ _ _ _ _ _ _ _ _ _ _ _\n");
-        for (int i = 0; i < basket->size_basket; i++)
-        {
-            printf("%s %d$ amount=%d total=%d$\n", basket->products[i].name, basket->products[i].price, basket->product_amount[i], basket->products[i].price * basket->product_amount[i]);
-        }
-        printf("_ _ _ _ _ _ _ _ _ _ _ _\n");
-        printf("Total %d$", basket->total);
-        printf("_ _ _ _ _ _ _ _ _ _ _ _\n");
-        time(&current_time);
-        time_info = localtime(&current_time);
-        strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%S", time_info);
-        printf("%s\n", time_string);
-        printf("Thank You for using our Market!\n");
-
-        basket->size_basket = 0;
-        basket->total = 0;
     }
+
+    printf("Processing your receipt...\n");
+    printf("******* Medipol Online Market ********\n");
+    printf("**************************************\n");
+    printf("444 8 544\n");
+    printf("medipol.edu.tr\n");
+    printf("------------------------\n");
+    calculateTotalAndShowBasket(basket);
+    printf("------------------------\n");
+    time(&current_time);
+    time_info = localtime(&current_time);
+    strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%S", time_info);
+    printf("%s\n", time_string);
+    printf("Thank You for using our Market!\n");
+
+    basket->size_basket = 0;
+    basket->total = 0;
 }
 
 int main()
@@ -490,11 +478,20 @@ int main()
                 }
                 else if (main_menu_choice == 3)
                 {
-                    checkOutAndPrintReceipt(products, &baskets[login_id]);
+                    if (baskets[login_id].size_basket == 0)
+                    {
+                        printf("User's basket is empty.\n");
+                    }
+                    else
+                    {
+                        checkOutAndPrintReceipt(products, &baskets[login_id]);
+                    }
+                    printf("Going back to main menu...\n");
                     is_return_mm = true;
                 }
                 else if (main_menu_choice == 4)
                 {
+                    printf("Going back to login page...\n");
                     is_return_lp = true;
                 }
                 // exit için else{} durumu yazmaya gerek yok. is_return_lp = false -> her döngü başlangıçı
