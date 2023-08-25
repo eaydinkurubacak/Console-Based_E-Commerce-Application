@@ -186,6 +186,7 @@ void calculateTotalAndShowBasket(struct Basket *basket)
         printf("%d.%s price=%d amount=%d total=%d$\n", i + 1, basket->products[i].name, basket->products[i].price, basket->product_amount[i], basket->product_amount[i] * basket->products[i].price);
         basket->total += basket->product_amount[i] * basket->products[i].price;
     }
+    printf("------------------------\n");
     printf("Total %d$\n", basket->total);
 }
 
@@ -204,6 +205,19 @@ void removeItemEditBasket(struct Basket *basket, int remove_item_index)
         }
     }
     basket->size_basket--;
+}
+
+void removeUserAndEditUsersAndTheirBaskets(struct User users[], int number_of_users, int remove_user_index, struct Basket baskets[])
+{
+    for (int i = 0; i < number_of_users; i++)
+    {
+        if (i > remove_user_index)
+        {
+            users[i].user_id--;
+            users[i - 1] = users[i];
+            baskets[i - 1] = baskets[i];
+        }
+    }
 }
 
 void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
@@ -240,6 +254,37 @@ void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
     basket->total = 0;
 }
 
+char *editStringForDisplay(char string[])
+{
+    int len = strlen(string);
+    char *result = (char *)malloc(26);
+
+    for (int i = 0; i < 25; i++)
+    {
+        if (i < len)
+        {
+            result[i] = string[i];
+        }
+        else
+        {
+            result[i] = ' ';
+        }
+    }
+    result[25] = '\0';
+
+    return result;
+}
+
+void displayUsers(struct User users[], int number_of_users)
+{
+    printf("Displaying users...\n");
+    printf("  %s%s%s\n", editStringForDisplay("Username"), editStringForDisplay("Password"), editStringForDisplay("Status"));
+    for (int i = 0; i < number_of_users; i++)
+    {
+        printf("%d.%s%s%s\n", i + 1, editStringForDisplay(users[i].user_name), editStringForDisplay(users[i].password), users[i].login_right == 0 ? editStringForDisplay("Blocked") : editStringForDisplay("Unblocked"));
+    }
+}
+
 int main()
 {
     struct User users[100];
@@ -260,6 +305,7 @@ int main()
     int temp_bsm_choice = 0; // temp basket sub menu choice
     bool is_return_bsm = false;
     bool is_return_lp = false; // is return login page
+    int admin_sub_menu_choice = 0;
 
     createInitialUsers(users);
     createProducts(products);
@@ -284,6 +330,114 @@ int main()
 
         if (login_id == 100)
         {
+            do
+            {
+                is_return_mm = false;
+                printf("Please choose one of the following services:\n");
+                printf("1. Activate User Account\n");
+                printf("2. Deactivate User Account\n");
+                printf("3. Add User\n");
+                printf("4. Remove User\n");
+                printf("5. Logout\n");
+                printf("6. Exit\n");
+                do
+                {
+                    printf("Your selection (1-6) : ");
+                    scanf("%d", &main_menu_choice);
+                } while (!(main_menu_choice >= 1 && main_menu_choice <= 6)); // main_menu_choice validasyonu
+
+                if (main_menu_choice == 1)
+                {
+                    displayUsers(users, number_of_users);
+                    do
+                    {
+                        printf("Please choose one of the users above to activate his/her account (1-%d / Enter 0 for main menu) : ", number_of_users);
+                        scanf("%d", &admin_sub_menu_choice);
+                    } while (!(admin_sub_menu_choice >= 0 && admin_sub_menu_choice <= number_of_users));
+                    is_return_mm = admin_sub_menu_choice == 0 ? true : false;
+
+                    if (!is_return_mm)
+                    {
+                        if (users[admin_sub_menu_choice - 1].login_right == 0)
+                        {
+                            users[admin_sub_menu_choice - 1].login_right = 3; // Activating customer
+                            printf("The activation process for the selected user is being completed...\n");
+                        }
+                        else
+                        {
+                            printf("The user you are trying to unblock is not currently blocked.\n");
+                        }
+                        is_return_mm = true;
+                    }
+                    printf("Going back to main menu...\n");
+                }
+                else if (main_menu_choice == 2)
+                {
+                    displayUsers(users, number_of_users);
+                    do
+                    {
+                        printf("Please choose one of the users above to deactivate his/her account (1-%d / Enter 0 for main menu) : ", number_of_users);
+                        scanf("%d", &admin_sub_menu_choice);
+                    } while (!(admin_sub_menu_choice >= 0 && admin_sub_menu_choice <= number_of_users));
+                    is_return_mm = admin_sub_menu_choice == 0 ? true : false;
+
+                    if (!is_return_mm)
+                    {
+                        users[admin_sub_menu_choice - 1].login_right = 0; // Deactivating customer
+                        printf("The deactivation process for the selected user is being completed...\n");
+                        is_return_mm = true;
+                    }
+                    printf("Going back to main menu...\n");
+                }
+                else if (main_menu_choice == 3)
+                {
+                    printf("Please enter the username of the new user to be added (Enter 0 for main menu) : ");
+                    scanf("%s", user_name);
+                    is_return_mm = !strcmp(user_name, "0") ? true : false;
+                    if (!is_return_mm)
+                    {
+                        printf("Please enter the password for the new user to be added (Enter 0 for main menu) : ");
+                        scanf("%s", password);
+                        is_return_mm = !strcmp(password, "0") ? true : false;
+                        if (!is_return_mm)
+                        {
+                            users[number_of_users].user_id = number_of_users;
+                            strcpy(users[number_of_users].user_name, user_name);
+                            strcpy(users[number_of_users].password, password);
+                            users[number_of_users].login_right = 3;
+                            number_of_users++;
+                            printf("The process of adding a new user is being completed...\n");
+                            is_return_mm = true;
+                        }
+                    }
+                    printf("Going back to main menu...\n");
+                }
+                else if (main_menu_choice == 4)
+                {
+                    displayUsers(users, number_of_users);
+                    do
+                    {
+                        printf("Please choose one of the users above to remove his/her account (1-%d / Enter 0 for main menu) : ", number_of_users);
+                        scanf("%d", &admin_sub_menu_choice);
+                    } while (!(admin_sub_menu_choice >= 0 && admin_sub_menu_choice <= number_of_users));
+                    is_return_mm = admin_sub_menu_choice == 0 ? true : false;
+
+                    if (!is_return_mm)
+                    {
+                        removeUserAndEditUsersAndTheirBaskets(users, number_of_users, admin_sub_menu_choice - 1, baskets);
+                        number_of_users--;
+                        printf("The process of removing a user is being completed...\n");
+                        is_return_mm = true;
+                    }
+                    printf("Going back to main menu...\n");
+                }
+                else if (main_menu_choice == 5)
+                {
+                    printf("Going back to login page...\n");
+                    is_return_lp = true;
+                }
+                // main_menu_choice == 6 exit durumu
+            } while (is_return_mm);
         }
         else
         {
