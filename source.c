@@ -36,7 +36,7 @@ int login(char user_name[], char password[], struct User users[], int number_of_
         {
             if (!strcmp(password, "qwerty"))
             {
-                printf("Successfully logged in!\n");
+                printf("Successfully logged in!\n\n");
                 return 100; // The value 100, which is not defined for the users array, is being used for admin login.
             }
             else
@@ -58,7 +58,7 @@ int login(char user_name[], char password[], struct User users[], int number_of_
                 {
                     if (!strcmp(password, users[i].password))
                     {
-                        printf("Successfully logged in!\n");
+                        printf("Successfully logged in!\n\n");
                         users[i].login_right = 3;
                         return users[i].user_id; // The user ID of the user found in the system is being used for user login.
                     }
@@ -179,6 +179,7 @@ void createInitialBaskets(struct Basket baskets[])
 void calculateTotalAndShowBasket(struct Basket *basket)
 {
     basket->total = 0;
+    printf("------------------------\n");
     for (int i = 0; i < basket->number_of_items; i++)
     {
         printf("%d.%s price=%d amount=%d total=%d$\n", i + 1, basket->products[i].name, basket->products[i].price, basket->product_quantities[i], basket->product_quantities[i] * basket->products[i].price);
@@ -186,6 +187,7 @@ void calculateTotalAndShowBasket(struct Basket *basket)
     }
     printf("------------------------\n");
     printf("Total %d$\n", basket->total);
+    printf("------------------------\n");
 }
 
 void removeItemAndEditBasket(struct Basket *basket, int remove_item_index)
@@ -239,9 +241,7 @@ void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
     printf("**************************************\n");
     printf("444 8 544\n");
     printf("medipol.edu.tr\n");
-    printf("------------------------\n");
     calculateTotalAndShowBasket(basket);
-    printf("------------------------\n");
     time(&current_time);
     time_info = localtime(&current_time);
     strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%S", time_info);
@@ -252,12 +252,12 @@ void checkOutAndPrintReceipt(struct Product products[], struct Basket *basket)
     basket->total = 0;
 }
 
-char *editStringForDisplay(char string[])
+char *editStringForDisplay(char string[], int result_sl)
 {
     int len = strlen(string);
-    char *result = (char *)malloc(26);
+    char *result = (char *)malloc(result_sl + 1);
 
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < result_sl; i++)
     {
         if (i < len)
         {
@@ -268,18 +268,20 @@ char *editStringForDisplay(char string[])
             result[i] = ' ';
         }
     }
-    result[25] = '\0';
+    result[result_sl] = '\0';
 
     return result;
 }
 
 void displayUsers(struct User users[], int number_of_users)
 {
+    char list_order[5];
     printf("Displaying users...\n");
-    printf("  %s%s%s\n", editStringForDisplay("Username"), editStringForDisplay("Password"), editStringForDisplay("Status"));
+    printf("     %s  %s  %s\n", editStringForDisplay("Username", 24), editStringForDisplay("Password", 24), editStringForDisplay("Status", 9));
     for (int i = 0; i < number_of_users; i++)
     {
-        printf("%d.%s%s%s\n", i + 1, editStringForDisplay(users[i].user_name), editStringForDisplay(users[i].password), users[i].login_right == 0 ? editStringForDisplay("Blocked") : editStringForDisplay("Unblocked"));
+        sprintf(list_order, "%d.", i + 1);
+        printf("%s%s  %s  %s\n", editStringForDisplay(list_order, 5), editStringForDisplay(users[i].user_name, 24), editStringForDisplay(users[i].password, 24), users[i].login_right == 0 ? editStringForDisplay("Blocked", 9) : editStringForDisplay("Unblocked", 9));
     }
 }
 
@@ -295,6 +297,7 @@ int main()
     int number_of_users = 2;
     int login_id = -1;
     int size_sr = 0; // size_search_result
+    int c;           // clear the input buffer
 
     // Menu choices
     int main_menu_choice = 0;
@@ -356,6 +359,7 @@ int main()
 
                 if (main_menu_choice == 1)
                 {
+                    printf("\n");
                     displayUsers(users, number_of_users);
                     do
                     {
@@ -377,10 +381,11 @@ int main()
                         }
                         is_return_mm = true;
                     }
-                    printf("Going back to main menu...\n");
+                    printf("Going back to main menu...\n\n");
                 }
                 else if (main_menu_choice == 2)
                 {
+                    printf("\n");
                     displayUsers(users, number_of_users);
                     do
                     {
@@ -391,21 +396,78 @@ int main()
 
                     if (!is_return_mm)
                     {
-                        users[admin_sub_menu_choice - 1].login_right = 0;
-                        printf("The deactivation process for the selected user is being completed...\n");
+                        if (users[admin_sub_menu_choice - 1].login_right == 0)
+                        {
+                            printf("The user you are trying to block is already blocked.\n");
+                        }
+                        else
+                        {
+                            users[admin_sub_menu_choice - 1].login_right = 0;
+                            printf("The deactivation process for the selected user is being completed...\n");
+                        }
                         is_return_mm = true;
                     }
-                    printf("Going back to main menu...\n");
+                    printf("Going back to main menu...\n\n");
                 }
                 else if (main_menu_choice == 3)
                 {
-                    printf("Please enter the username of the new user to be added (Enter 0 for main menu) : ");
-                    scanf("%s", user_name);
+                    printf("\n");
+                    while ((c = getchar()) != '\n')
+                    {
+                        // Clear the input buffer (main_menu_choice's '\n' character)
+                    }
+
+                    do
+                    {
+                        printf("Please enter the username of the new user to be added (Enter 0 for main menu) : ");
+                        fgets(user_name, 50, stdin);
+
+                        user_name[strlen(user_name) - 1] = '\0';
+                        if (strlen(user_name) == 0)
+                        {
+                            printf("The username cannot be left blank\n");
+                        }
+                        else if (strlen(user_name) > 24)
+                        {
+                            printf("Username should be a maximum of 24 characters in length\n");
+                        }
+                        else
+                        {
+                            if (strchr(user_name, ' ') != NULL)
+                            {
+                                printf("Username should not contain whitespace characters !\n");
+                            }
+                        }
+                    } while (!(strlen(user_name) != 0 && strlen(user_name) <= 24 && strrchr(user_name, ' ') == NULL));
+                    // Clean buffer
+
                     is_return_mm = !strcmp(user_name, "0") ? true : false;
                     if (!is_return_mm)
                     {
-                        printf("Please enter the password for the new user to be added (Enter 0 for main menu) : ");
-                        scanf("%s", password);
+                        do
+                        {
+                            printf("Please enter the password for the new user to be added (Enter 0 for main menu) : ");
+                            fgets(password, 50, stdin);
+
+                            password[strlen(password) - 1] = '\0';
+                            if (strlen(password) == 0)
+                            {
+                                printf("The password cannot be left blank\n");
+                            }
+                            else if (strlen(password) > 24)
+                            {
+                                printf("Password should be a maximum of 24 characters in length\n");
+                            }
+                            else
+                            {
+                                if (strchr(password, ' ') != NULL)
+                                {
+                                    printf("Password should not contain whitespace characters !\n");
+                                }
+                            }
+                        } while (!(strlen(password) != 0 && strlen(password) <= 24 && strrchr(password, ' ') == NULL));
+                        // Clean buffer
+
                         is_return_mm = !strcmp(password, "0") ? true : false;
                         if (!is_return_mm)
                         {
@@ -418,10 +480,11 @@ int main()
                             is_return_mm = true;
                         }
                     }
-                    printf("Going back to main menu...\n");
+                    printf("Going back to main menu...\n\n");
                 }
                 else if (main_menu_choice == 4)
                 {
+                    printf("\n");
                     displayUsers(users, number_of_users);
                     do
                     {
@@ -437,11 +500,11 @@ int main()
                         printf("The process of removing a user is being completed...\n");
                         is_return_mm = true;
                     }
-                    printf("Going back to main menu...\n");
+                    printf("Going back to main menu...\n\n");
                 }
                 else if (main_menu_choice == 5)
                 {
-                    printf("Going back to login page...\n");
+                    printf("Going back to login page...\n\n");
                     is_return_lp = true;
                 }
             } while (is_return_mm);
@@ -466,6 +529,7 @@ int main()
 
                 if (main_menu_choice == 1)
                 {
+                    printf("\n");
                     printf("What are you searching for ? ");
                     scanf("%s", search);
                     searchForAProduct(search, products, search_result, &size_sr);
@@ -486,10 +550,11 @@ int main()
 
                     if (is_return_mm)
                     {
-                        printf("Going back to main menu...\n");
+                        printf("Going back to main menu...\n\n");
                     }
                     else
                     {
+                        printf("\n");
                         printf("found %d similar items:\n", size_sr);
                         for (int i = 0; i < size_sr; i++)
                         {
@@ -505,7 +570,7 @@ int main()
 
                         if (is_return_mm)
                         {
-                            printf("Going back to main menu...\n");
+                            printf("Going back to main menu...\n\n");
                         }
                         else
                         {
@@ -532,7 +597,7 @@ int main()
 
                             if (is_return_mm)
                             {
-                                printf("Going back to main menu...\n");
+                                printf("Going back to main menu...\n\n");
                             }
                             else
                             {
@@ -542,26 +607,28 @@ int main()
 
                                 printf("Added %s into your Basket.\n", search_result[product_choice - 1].name);
                                 is_return_mm = true;
-                                printf("Going back to main menu...\n");
+                                printf("Going back to main menu...\n\n");
                             }
                         }
                     }
                 }
                 else if (main_menu_choice == 2)
                 {
+                    printf("\n");
                     do
                     {
                         is_return_bsm = false;
                         if (baskets[login_id].number_of_items == 0)
                         {
                             printf("User's basket is empty.\n");
-                            printf("Going back to main menu...\n");
+                            printf("Going back to main menu...\n\n");
                             is_return_mm = true;
                         }
                         else
                         {
                             printf("Your basket contains:\n");
                             calculateTotalAndShowBasket(&baskets[login_id]);
+                            printf("\n");
                             printf("Please choose an option:\n");
                             printf("1.Update amount\n");
                             printf("2.Remove an item\n");
@@ -575,6 +642,7 @@ int main()
 
                             if (basket_sub_menu_choice == 1)
                             {
+                                printf("\n");
                                 do
                                 {
                                     printf("Please select which item to change its amount (1-%d) : ", baskets[login_id].number_of_items);
@@ -603,31 +671,37 @@ int main()
 
                                 if (is_return_mm)
                                 {
-                                    printf("Going back to main menu...\n");
+                                    printf("Going back to main menu...\n\n");
                                 }
                                 else
                                 {
                                     baskets[login_id].product_quantities[temp_bsm_choice - 1] = product_amount;
+                                    printf("\n");
                                     is_return_bsm = true;
                                 }
                             }
                             else if (basket_sub_menu_choice == 2)
                             {
+                                printf("\n");
                                 do
                                 {
                                     printf("Please select which item to remove (1-%d) : ", baskets[login_id].number_of_items);
                                     scanf("%d", &temp_bsm_choice);
                                 } while (!(temp_bsm_choice >= 1 && temp_bsm_choice <= baskets[login_id].number_of_items));
                                 removeItemAndEditBasket(&baskets[login_id], temp_bsm_choice - 1);
+                                printf("\n");
                                 is_return_bsm = true;
                             }
                             else if (basket_sub_menu_choice == 3)
                             {
+                                printf("\n");
                                 checkOutAndPrintReceipt(products, &baskets[login_id]);
+                                printf("Going back to main menu...\n\n");
                                 is_return_mm = true;
                             }
                             else if (basket_sub_menu_choice == 4)
                             {
+                                printf("Going back to main menu...\n\n");
                                 is_return_mm = true;
                             }
                         }
@@ -636,6 +710,7 @@ int main()
                 }
                 else if (main_menu_choice == 3)
                 {
+                    printf("\n");
                     if (baskets[login_id].number_of_items == 0)
                     {
                         printf("User's basket is empty.\n");
@@ -644,12 +719,12 @@ int main()
                     {
                         checkOutAndPrintReceipt(products, &baskets[login_id]);
                     }
-                    printf("Going back to main menu...\n");
+                    printf("Going back to main menu...\n\n");
                     is_return_mm = true;
                 }
                 else if (main_menu_choice == 4)
                 {
-                    printf("Going back to login page...\n");
+                    printf("Going back to login page...\n\n");
                     is_return_lp = true;
                 }
 
